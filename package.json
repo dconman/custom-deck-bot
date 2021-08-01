@@ -1,0 +1,25 @@
+{
+  "name": "custom-deck-bot",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dconman/custom-deck-bot.git"
+  },
+  "author": "Dawson Conway",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dconman/custom-deck-bot/issues"
+  },
+  "homepage": "https://github.com/dconman/custom-deck-bot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "pg": "^8.7.1",
+    "postgres-migrations": "^5.3.0"
+  }
+}
