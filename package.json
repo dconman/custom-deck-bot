@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/dconman/custom-deck-bot#readme",
   "dependencies": {
-    "discord.js": "^12.5.3",
+    "discord.js": "^13.0.0-dev.t1628035429.00d5cee",
     "pg": "^8.7.1",
     "postgres-migrations": "^5.3.0"
   }
