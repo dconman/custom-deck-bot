@@ -1,7 +1,7 @@
 module.exports = {
-  command: 'ping',
+  name: 'ping',
   description: 'test that this bot is listening',
-  execute(_db, msg, _args) {
-    msg.channel.send('PONG!');
+  async execute(interaction) {
+    return interaction.reply('PONG!');
   },
 };

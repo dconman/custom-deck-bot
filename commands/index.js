@@ -1,19 +1,10 @@
-const commands = [
-  require('./ping.js'),
-  require('./list-decks.js'),
-  require('./add-deck.js'),
-  require('./delete-deck.js'),
-];
+const { Collection } = require('discord.js');
 
-commands.push({
-  command: 'help',
-  description: 'this help text',
-  execute(_db, msg, _args) {
-    const text = commands
-      .map((cmd) => `\`${cmd.command}\`\t${cmd.description}`)
-      .join('\n');
-    msg.channel.send(text);
-  },
-});
-
-module.exports = commands;
+module.exports = new Collection(
+  [
+    require('./ping.js'),
+    require('./list-decks.js'),
+    require('./add-deck.js'),
+    require('./delete-deck.js'),
+  ].map((command) => [command.name, command])
+);

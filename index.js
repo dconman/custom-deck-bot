@@ -1,8 +1,9 @@
+console.tee = (val) => { console.log(val); return val; };
 const net = require('net');
 const initDb = require('./db/initialize');
-const connectToDiscord = require('./discord-client.js');
+const connectToDiscord = require('./discord-client/initialize');
 
-initDb().then(connectToDiscord);
+initDb().then(() => connectToDiscord()).catch(e => console.error(e.stack));
 
 const server = net.createServer((c) => {
   // 'connection' listener.

@@ -1,23 +1,31 @@
 const Snowflake = require('../snowflake.js');
+const db = require('../db');
+
 module.exports = {
-  command: 'add-deck',
-  description: '**name** creates a new deck on a server with the given name',
-  execute(db, msg, args) {
-    const guildId = Snowflake.fromDiscord(msg.guild);
-    const name = args[0];
+  name: 'add-deck',
+  description: 'Creates a new deck on a server',
+  options: [
+    {
+      name: 'name',
+      description: 'the name of the deck to create',
+      type: 'STRING',
+      required: true,
+    },
+  ],
+  execute(interaction) {
+    const guildId = Snowflake.fromSnowflake(interaction.guildId);
+    const name = interaction.options.getString('name');
     if (!guildId) {
-      msg.channel.send('must be used in server');
-      return;
+      return interaction.reply('must be used in server');
     }
     if (!name) {
-      msg.channel.send('must provide a name');
-      return;
+      return interaction.reply('must provide a name');
     }
-    db.query(
-      'insert into decks (guild_id, name) values ($1::bigint, $2::text)',
-      [guildId, name]
-    ).then((res) => {
-      msg.channel.send(`added ${res.rowCount} decks`);
-    });
+    return db
+      .q(
+        'insert into decks (guild_id, name) values ($1::bigint, $2::text)',
+        [guildId, name]
+      )
+      .then((res) => interaction.reply(`added ${res.rowCount} decks`));
   },
 };

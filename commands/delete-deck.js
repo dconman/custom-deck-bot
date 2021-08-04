@@ -1,23 +1,31 @@
 const Snowflake = require('../snowflake.js');
+const db = require('../db');
+
 module.exports = {
-  command: 'delete-deck',
-  description: '**name** removes the named deck from a server',
-  execute(db, msg, args) {
-    const guildId = Snowflake.fromDiscord(msg.guild);
-    const name = args[0];
+  name: 'delete-deck',
+  description: 'Deletes a deck from the server',
+  options: [
+    {
+      name: 'name',
+      description: 'the name of the deck to create',
+      type: 'STRING',
+      required: true,
+    },
+  ],
+  execute(interaction) {
+    const guildId = Snowflake.fromSnowflake(interaction.guildId);
+    const name = interaction.options.getString('name');
     if (!guildId) {
-      msg.channel.send('must be used in server');
-      return;
+      return interaction.reply('must be used in server');
     }
     if (!name) {
-      msg.channel.send('must provide a name');
-      return;
+      return interaction.reply('must provide a name');
     }
-    db.query(
-      'delete from decks where guild_id = $1::bigint and name = $2::text',
-      [guildId, name]
-    ).then((res) => {
-      msg.channel.send(`deleted ${res.rowCount} decks`);
-    });
+    return db
+      .query(
+        'delete from decks where guild_id = $1::bigint and name = $2::text',
+        [guildId, name]
+      )
+      .then((res) => interaction.reply(`deleted ${res.rowCount} decks`));
   },
 };

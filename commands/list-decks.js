@@ -1,14 +1,15 @@
 const Snowflake = require('../snowflake.js');
+const db = require('../db');
+
 module.exports = {
-  command: 'list-decks',
+  name: 'list-decks',
   description: 'lists all decks on a server',
-  execute(db, msg, _args) {
-    const guildId = Snowflake.fromDiscord(msg.guild);
-    db.query('select * from decks where guild_id = $1::bigint', [guildId]).then(
-      (res) => {
-        const response = res.rows.map((row) => row.name).join('\n');
-        msg.channel.send(response || 'No decks yet!');
-      }
-    );
+  execute(interaction) {
+    const guildId = Snowflake.fromSnowflake(interaction.guildId);
+    return db
+      .q('select * from decks where guild_id = $1::bigint', [guildId])
+      .then(
+        (res) => interaction.reply(res.rows.map((row) => row.name).join('\n') || 'No decks yet!')
+      );
   },
 };
