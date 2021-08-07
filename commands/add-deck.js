@@ -1,4 +1,3 @@
-const Snowflake = require('../utils/snowflake');
 const db = require('../db');
 
 module.exports = {
@@ -13,16 +12,15 @@ module.exports = {
     },
   ],
   execute(interaction) {
-    const guildId = Snowflake.fromSnowflake(interaction.guildId);
     const name = interaction.options.getString('name');
-    if (!guildId) {
+    if (!interaction.guildId) {
       return interaction.reply('must be used in server');
     }
     if (!name) {
       return interaction.reply('must provide a name');
     }
     return db
-      .addDeck(guildId, name)
+      .addDeck(interaction.guildId, name)
       .then((res) => interaction.reply(`added ${res.rowCount} decks`));
   },
 };
