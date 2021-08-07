@@ -1,4 +1,4 @@
-const Snowflake = require('../snowflake');
+const Snowflake = require('../utils/snowflake');
 const db = require('../db');
 
 module.exports = {
@@ -22,10 +22,7 @@ module.exports = {
       return interaction.reply('must provide a name');
     }
     return db
-      .q(
-        'insert into decks (guild_id, name) values ($1::bigint, $2::text)',
-        [guildId, name]
-      )
+      .addDeck(guildId, name)
       .then((res) => interaction.reply(`added ${res.rowCount} decks`));
   },
 };

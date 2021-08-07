@@ -2,7 +2,9 @@ const net = require('net');
 const initDb = require('./db/initialize');
 const connectToDiscord = require('./discord-client/initialize');
 
-initDb().then(() => connectToDiscord()).catch(e => console.error(e.stack));
+initDb()
+  .then(() => connectToDiscord())
+  .catch((e) => console.error(e.stack));
 
 const server = net.createServer();
 server.on('error', (err) => {

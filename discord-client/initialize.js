@@ -4,7 +4,9 @@ const commands = require('../commands');
 async function deployCommands(guildId) {
   return (
     process.env.TEST_MODE == 'true'
-      ? Promise.resolve(client.guilds.cache.get(guildId || process.env.DEV_GUILD))
+      ? Promise.resolve(
+          client.guilds.cache.get(guildId || process.env.DEV_GUILD)
+        )
       : client.application?.fetch()
   )?.then((target) => target?.commands.set(commands));
 }
@@ -20,12 +22,13 @@ module.exports = async function () {
     if (process.env.TEST_MODE === 'true') {
       client.channels
         .fetch(process.env.DEV_CHANNEL)
-        .then((channel) => 
-          channel.send('build complete!')
+        .then((channel) =>
+          channel
+            .send('build complete!')
             .then(() => deployCommands())
             .then(() => channel.send('deploy complete!'))
         )
-        .catch(e => console.error(e.stack));
+        .catch((e) => console.error(e.stack));
     }
     promiseResolve('Ready!');
   });
@@ -35,7 +38,7 @@ module.exports = async function () {
     console.log('deploy recieved');
     return deployCommands(message.guild.id)
       .then(() => message.channel.send('deploy successful'))
-      .catch(e => console.error(e.stack));
+      .catch((e) => console.error(e.stack));
   });
 
   client.on('interactionCreate', async (interaction) => {
@@ -43,8 +46,10 @@ module.exports = async function () {
     console.log(interaction);
     if (!commands.has(interaction.commandName)) return;
 
-    return commands.get(interaction.commandName).execute(interaction)
-      .catch(e => console.error(e.stack));
+    return commands
+      .get(interaction.commandName)
+      .execute(interaction)
+      .catch((e) => console.error(e.stack));
   });
 
   console.log('logging in');

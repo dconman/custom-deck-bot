@@ -1,4 +1,4 @@
-const Snowflake = require('../snowflake');
+const Snowflake = require('../utils/snowflake');
 const db = require('../db');
 
 module.exports = {
@@ -22,10 +22,7 @@ module.exports = {
       return interaction.reply('must provide a name');
     }
     return db
-      .query(
-        'delete from decks where guild_id = $1::bigint and name = $2::text',
-        [guildId, name]
-      )
+      .deleteDeck(guildId, name)
       .then((res) => interaction.reply(`deleted ${res.rowCount} decks`));
   },
 };
