@@ -1,4 +1,4 @@
-const Snowflake = require('../snowflake.js');
+const Snowflake = require('../snowflake');
 const db = require('../db');
 
 module.exports = {
