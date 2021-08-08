@@ -22,6 +22,11 @@ module.exports = {
     }
     return db
       .addDeck(interaction.guildId, name)
-      .then((res) => interaction.reply(`added ${res.rowCount} decks`));
+      .then((res) => {
+        if (!res.rows.length)
+          return { content: 'Deck add error', ephemeral: true };
+        return `Deck ${res.rows[0].name} added!`;
+      })
+      .then((message) => interaction.reply(message));
   },
 };

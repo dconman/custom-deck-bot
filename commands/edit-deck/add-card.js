@@ -36,7 +36,7 @@ module.exports = {
       return interaction.reply('must select a deck');
     }
     if (!cardName) {
-      return interaction.reply('must select a card');
+      return interaction.reply('must provide a card name');
     }
     return db
       .addCard(interaction.guildId, deckName, cardName, cardBody)

@@ -22,6 +22,11 @@ module.exports = {
     }
     return db
       .deleteDeck(interaction.guildId, name)
-      .then((res) => interaction.reply(`deleted ${res.rowCount} decks`));
+      .then((res) => {
+        if (!res.rows.length)
+          return { content: 'Deck delete error', ephemeral: true };
+        return `Deck ${res.rows[0].name} deleted!`;
+      })
+      .then((message) => interaction.reply(message));
   },
 };

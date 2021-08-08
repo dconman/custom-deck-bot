@@ -44,6 +44,5 @@ module.exports = async function () {
   client.on('interactionCreate', handleInteractionCreate);
 
   console.log('logging in');
-  client.login(process.env.DISCORD_TOKEN);
-  return readyPromise;
+  return client.login(process.env.DISCORD_TOKEN).then(readyPromise);
 };

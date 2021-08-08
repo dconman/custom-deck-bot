@@ -8,6 +8,13 @@ select ${selectList(DECK_FEILDS, '"decks"')}
 from "decks" where "decks"."guild_id_sf" = $1::bigint
 `.trim();
 
+const GET_DECK_QUERY = `
+select ${selectList(DECK_FEILDS, '"decks"')}
+from "decks"
+where "decks"."guild_id_sf" = $1::bigint
+  and "decks"."name" = $2::text
+`.trim();
+
 const ADD_DECK_QUERY = `
 insert into "decks" ("guild_id_sf", "name")
 values ($1::bigint, $2::text)
@@ -95,10 +102,12 @@ module.exports = class QueryManager {
   }
 
   snowflakeFromDiscord(snowflake) {
+    if (!snowflake) return null;
     return (BigInt(snowflake) - SNOWFLAKE_MODIFIER).toString();
   }
 
   snowflakeFromPostgres(snowflake) {
+    if (!snowflake) return null;
     return (BigInt(snowflake) + SNOWFLAKE_MODIFIER).toString();
   }
 
@@ -136,6 +145,13 @@ module.exports = class QueryManager {
 
   async listDecks(guildId) {
     return this.query(LIST_DECKS_QUERY, [this.snowflakeFromDiscord(guildId)]);
+  }
+
+  async getDeck(guildId, name) {
+    return this.query(GET_DECK_QUERY, [
+      this.snowflakeFromDiscord(guildId),
+      name,
+    ]);
   }
 
   async addDeck(guildId, name) {
