@@ -1,8 +1,9 @@
-const db = require('../db');
+const db = require('../../db');
 
 module.exports = {
   name: 'add-deck',
   description: 'Creates a new deck on a server',
+  type: 'SUB_COMMAND',
   options: [
     {
       name: 'name',

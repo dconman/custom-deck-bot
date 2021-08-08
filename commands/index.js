@@ -1,10 +1,23 @@
-const fs = require('fs');
+const { requireCurrentDir } = require('../utils');
 const { Collection } = require('discord.js');
 
-const commands = fs
-  .readdirSync(__dirname)
-  .filter((file) => !__filename.endsWith(file))
-  .map((file) => require('./' + file))
-  .map((command) => [command.name, command]);
+exports.commands = new Collection(
+  requireCurrentDir(module).map((command) => [command.name, command])
+);
 
-module.exports = new Collection(commands);
+module.exports.handleInteractionCreate = async (interaction) => {
+  if (!interaction.isCommand()) return;
+  console.log(interaction);
+  if (!exports.commands.has(interaction.commandName)) return;
+
+  return exports.commands
+    .get(interaction.commandName)
+    .execute(interaction)
+    .catch((e) => {
+      console.error(e.stack);
+      interaction.reply({
+        content: process.env.TEST_MODE ? e.stack : 'oops, there was an issue',
+        ephemeral: !process.env.TEST_MODE,
+      });
+    });
+};

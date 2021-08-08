@@ -1,8 +1,9 @@
-const db = require('../db');
+const db = require('../../db');
 
 module.exports = {
   name: 'show-deck',
   description: 'lists the cards in a deck',
+  type: 'SUB_COMMAND',
   options: [
     {
       name: 'name',

@@ -1,8 +1,9 @@
-const db = require('../db');
+const db = require('../../db');
 
 module.exports = {
   name: 'delete-deck',
   description: 'Deletes a deck from the server',
+  type: 'SUB_COMMAND',
   options: [
     {
       name: 'name',

@@ -1,5 +1,5 @@
 const client = require('.');
-const commands = require('../commands');
+const { commands, handleInteractionCreate } = require('../commands');
 
 async function deployCommands(guildId) {
   return (
@@ -41,22 +41,7 @@ module.exports = async function () {
       .catch((e) => console.error(e.stack));
   });
 
-  client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand()) return;
-    console.log(interaction);
-    if (!commands.has(interaction.commandName)) return;
-
-    return commands
-      .get(interaction.commandName)
-      .execute(interaction)
-      .catch((e) => {
-        console.error(e.stack);
-        interaction.reply({
-          content: process.env.TEST_MODE ? e.stack : 'oops, there was an issue',
-          ephemeral: !process.env.TEST_MODE,
-        });
-      });
-  });
+  client.on('interactionCreate', handleInteractionCreate);
 
   console.log('logging in');
   client.login(process.env.DISCORD_TOKEN);

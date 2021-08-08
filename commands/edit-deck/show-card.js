@@ -1,9 +1,10 @@
 const { MessageEmbed } = require('discord.js');
-const db = require('../db');
+const db = require('../../db');
 
 module.exports = {
-  name: 'add-card',
-  description: 'adds a card to a deck',
+  name: 'show-card',
+  description: 'shows a card from a deck',
+  type: 'SUB_COMMAND',
   options: [
     {
       name: 'deck',
@@ -12,22 +13,15 @@ module.exports = {
       required: true,
     },
     {
-      name: 'name',
+      name: 'card',
       description: 'the name of the card',
       type: 'STRING',
       required: true,
     },
-    {
-      name: 'body',
-      description: 'the content of the card',
-      type: 'STRING',
-      required: false,
-    },
   ],
   execute(interaction) {
     const deckName = interaction.options.getString('deck');
-    const cardName = interaction.options.getString('name');
-    const cardBody = interaction.options.getString('body') || '';
+    const cardName = interaction.options.getString('card');
     if (!interaction.guildId) {
       return interaction.reply('must be used in server');
     }
@@ -38,10 +32,10 @@ module.exports = {
       return interaction.reply('must select a card');
     }
     return db
-      .addCard(interaction.guildId, deckName, cardName, cardBody)
+      .showCard(interaction.guildId, deckName, cardName)
       .then((res) => {
         if (!res.rows.length)
-          return { content: 'Card add error', ephemeral: true };
+          return { content: 'Card not found', ephemeral: true };
         return {
           embeds: [
             new MessageEmbed()
