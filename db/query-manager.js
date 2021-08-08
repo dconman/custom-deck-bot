@@ -1,53 +1,88 @@
-const DECK_FEILDS = 'id, name, guild_id_sf';
+function selectList(columns, table, sep = ', ') {
+  return columns.map((column) => table + '.' + column).join(sep);
+}
+
+const DECK_FEILDS = ['"id"', '"name"', '"guild_id_sf"'];
 const LIST_DECKS_QUERY = `
-select ${DECK_FEILDS} from decks where guild_id_sf = $1::bigint
+select ${selectList(DECK_FEILDS, '"decks"')}
+from "decks" where "decks"."guild_id_sf" = $1::bigint
 `.trim();
 
 const ADD_DECK_QUERY = `
-insert into decks (guild_id_sf, name)
+insert into "decks" ("guild_id_sf", "name")
 values ($1::bigint, $2::text)
-returning ${DECK_FEILDS}
+returning ${selectList(DECK_FEILDS, '"decks"')}
 `.trim();
 
 const DELETE_DECK_QUERY = `
-delete from decks
-where guild_id_sf = $1::bigint and name = $2::text
-returning ${DECK_FEILDS}
+delete from "decks"
+where "decks"."guild_id_sf" = $1::bigint and "decks"."name" = $2::text
+returning ${selectList(DECK_FEILDS, '"decks"')}
 `.trim();
 
-const CARD_FIELDS = 'id, name, deckId, body, drawn';
+const CARD_FIELDS = ['"id"', '"name"', '"deck_id"', '"body"', '"drawn"'];
+function filterByDrawn(pos) {
+  return `and "cards"."drawn" = $${pos}::boolean`;
+}
 
-const LIST_CARDS_QUERY = `
-select ${CARD_FIELDS} from cards where deckId = $1::integer
+const LIST_DECK_CARDS_QUERY = `
+select ${selectList(CARD_FIELDS, '"cards')}
+from "cards"
+inner join "decks"
+  on "cards"."deck_id" = "decks"."id"
+where "decks"."guild_id_sf" = $1::bigint and "decks"."name" = $2::text
 `.trim();
-const LIST_CARDS_ADVANCED_QUERY = LIST_CARDS_QUERY + 'and drawn = $2::boolean';
+const LIST_DECK_CARDS_ADVANCED_QUERY = LIST_DECK_CARDS_QUERY + filterByDrawn(3);
 
-const ADD_CARD_QUERY = `
-insert into cards (deckId, name, body)
-values ($1::integer, $2::text, $3::text)
-returning ${CARD_FIELDS}
+const SHOW_DECK_CARD_QUERY = `
+select ${selectList(CARD_FIELDS, '"cards')}
+from "cards"
+inner join "decks"
+  on "cards"."deck_id" = "decks"."id"
+where "decks"."guild_id_sf" = $1::bigint
+  and "decks"."name" = $2::text
+  and "cards"."name" = $3::text
 `.trim();
 
-const DELETE_CARD_QUERY = `
-delete from cards
-where deckId = $1::integer and name = $2::text
-returning ${CARD_FIELDS}
+const ADD_DECK_CARD_QUERY = `
+insert into "cards" ("deck_id", "name", "body")
+select "decks"."id", $3::text, $4::text
+from "decks" where "decks"."guild_id_sf" = $1::binint and "decks"."name" = $2::text
+returning ${selectList(CARD_FIELDS, '"cards"')}
 `.trim();
 
-const DRAW_CARD_QUERY = `
-update cards
-set drawn = TRUE
-where id = (
-  select id from cards
-  where deckId = $1::integer and drawn = FALSE
+const DELETE_DECK_CARD_QUERY = `
+delete from "cards"
+using "decks"
+where "cards"."deck_id" = "decks"."id"
+  and "decks"."guild_id_sf" = $1::binint
+  and "decks"."name" = $2::text
+  and "cards"."name" = $3::text
+returning ${selectList(CARD_FIELDS, '"cards"')}
+`.trim();
+
+const DRAW_DECK_CARD_QUERY = `
+update "cards"
+set "drawn" = TRUE
+where "cards"."id" = (
+  select c2."id" from "cards" c2
+  inner join "decks"
+    on c2."deck_id" = "decks".id 
+  where "decks"."guild_id_sf" = $1::binint
+    and "decks"."name" = $2::text
+    and c2"drawn" = FALSE
   order by random()
   limit 1
-) returning ${CARD_FIELDS}
+) returning ${selectList(CARD_FIELDS, '"cards"')}
 `.trim();
 
 const RESET_DECK_QUERY = `
-update cards set drawn = FALSE where deckId = $1::integer
-returning ${CARD_FIELDS}
+update "cards" set "drawn" = FALSE
+using "decks"
+where "cards"."deck_id" = "decks"."id"
+  and "decks"."guild_id_sf" = $1::binint
+  and "decks"."name" = $2::text
+returning ${selectList(CARD_FIELDS, '"cards"')}
 `.trim();
 
 const SNOWFLAKE_MODIFIER = 9223372036854775808n;
@@ -117,24 +152,54 @@ module.exports = class QueryManager {
     ]);
   }
 
-  async listCards(deckId, drawn) {
-    if (drawn === undefined) return this.query(LIST_CARDS_QUERY, [deckId]);
-    return this.query(LIST_CARDS_ADVANCED_QUERY, [deckId, drawn]);
+  async listDeckCards(guildId, deckName, drawn) {
+    if (drawn === undefined)
+      return this.query(LIST_DECK_CARDS_QUERY, [
+        this.snowflakeFromDiscord(guildId),
+        deckName,
+      ]);
+    return this.query(LIST_DECK_CARDS_ADVANCED_QUERY, [
+      this.snowflakeFromDiscord(guildId),
+      deckName,
+    ]);
   }
 
-  async addCard(deckId, cardName, cardBody) {
-    return this.query(ADD_CARD_QUERY, [deckId, cardName, cardBody]);
+  async addCard(guildId, deckName, cardName, cardBody) {
+    return this.query(ADD_DECK_CARD_QUERY, [
+      this.snowflakeFromDiscord(guildId),
+      deckName,
+      cardName,
+      cardBody,
+    ]);
   }
 
-  async deleteCard(deckId, cardName) {
-    return this.query(DELETE_CARD_QUERY, [deckId, cardName]);
+  async deleteCard(guildId, deckName, cardName) {
+    return this.query(DELETE_DECK_CARD_QUERY, [
+      this.snowflakeFromDiscord(guildId),
+      deckName,
+      cardName,
+    ]);
   }
 
-  async drawCard(deckId) {
-    return this.query(DRAW_CARD_QUERY, [deckId]);
+  async drawCard(guildId, deckName) {
+    return this.query(DRAW_DECK_CARD_QUERY, [
+      this.snowflakeFromDiscord(guildId),
+      deckName,
+    ]);
   }
 
-  async resetDeck(deckId) {
-    return this.query(RESET_DECK_QUERY, [deckId]);
+  async showCard(guildId, deckName, cardName) {
+    return this.query(SHOW_DECK_CARD_QUERY, [
+      this.snowflakeFromDiscord(guildId),
+      deckName,
+      cardName,
+    ]);
+  }
+
+  async resetDeck(guildId, deckName) {
+    return this.query(RESET_DECK_QUERY, [
+      this.snowflakeFromDiscord(guildId),
+      deckName,
+    ]);
   }
 };
