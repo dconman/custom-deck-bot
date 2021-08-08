@@ -7,5 +7,7 @@ module.exports = new Collection(
     require('./add-deck'),
     require('./delete-deck'),
     require('./secret-ping'),
+    require('./show-deck'),
+    require('./show-card'),
   ].map((command) => [command.name, command])
 );

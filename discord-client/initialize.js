@@ -3,7 +3,7 @@ const commands = require('../commands');
 
 async function deployCommands(guildId) {
   return (
-    process.env.TEST_MODE == 'true'
+    process.env.TEST_MODE
       ? Promise.resolve(
           client.guilds.cache.get(guildId || process.env.DEV_GUILD)
         )
@@ -19,7 +19,7 @@ module.exports = async function () {
   client.once('ready', () => {
     console.log('discord client ready');
 
-    if (process.env.TEST_MODE === 'true') {
+    if (process.env.TEST_MODE) {
       client.channels
         .fetch(process.env.DEV_CHANNEL)
         .then((channel) =>
@@ -49,7 +49,13 @@ module.exports = async function () {
     return commands
       .get(interaction.commandName)
       .execute(interaction)
-      .catch((e) => console.error(e.stack));
+      .catch((e) => {
+        console.error(e.stack);
+        interaction.reply({
+          content: process.env.TEST_MODE ? e.stack : 'oops, there was an issue',
+          ephemeral: !process.env.TEST_MODE,
+        });
+      });
   });
 
   console.log('logging in');
