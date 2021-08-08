@@ -26,7 +26,7 @@ function filterByDrawn(pos) {
 }
 
 const LIST_DECK_CARDS_QUERY = `
-select ${selectList(CARD_FIELDS, '"cards')}
+select ${selectList(CARD_FIELDS, '"cards"')}
 from "cards"
 inner join "decks"
   on "cards"."deck_id" = "decks"."id"
@@ -35,7 +35,7 @@ where "decks"."guild_id_sf" = $1::bigint and "decks"."name" = $2::text
 const LIST_DECK_CARDS_ADVANCED_QUERY = LIST_DECK_CARDS_QUERY + filterByDrawn(3);
 
 const SHOW_DECK_CARD_QUERY = `
-select ${selectList(CARD_FIELDS, '"cards')}
+select ${selectList(CARD_FIELDS, '"cards"')}
 from "cards"
 inner join "decks"
   on "cards"."deck_id" = "decks"."id"
@@ -47,7 +47,7 @@ where "decks"."guild_id_sf" = $1::bigint
 const ADD_DECK_CARD_QUERY = `
 insert into "cards" ("deck_id", "name", "body")
 select "decks"."id", $3::text, $4::text
-from "decks" where "decks"."guild_id_sf" = $1::binint and "decks"."name" = $2::text
+from "decks" where "decks"."guild_id_sf" = $1::bigint and "decks"."name" = $2::text
 returning ${selectList(CARD_FIELDS, '"cards"')}
 `.trim();
 
@@ -55,7 +55,7 @@ const DELETE_DECK_CARD_QUERY = `
 delete from "cards"
 using "decks"
 where "cards"."deck_id" = "decks"."id"
-  and "decks"."guild_id_sf" = $1::binint
+  and "decks"."guild_id_sf" = $1::bigint
   and "decks"."name" = $2::text
   and "cards"."name" = $3::text
 returning ${selectList(CARD_FIELDS, '"cards"')}
@@ -68,9 +68,9 @@ where "cards"."id" = (
   select c2."id" from "cards" c2
   inner join "decks"
     on c2."deck_id" = "decks".id 
-  where "decks"."guild_id_sf" = $1::binint
+  where "decks"."guild_id_sf" = $1::bigint
     and "decks"."name" = $2::text
-    and c2"drawn" = FALSE
+    and c2."drawn" = FALSE
   order by random()
   limit 1
 ) returning ${selectList(CARD_FIELDS, '"cards"')}
@@ -80,7 +80,7 @@ const RESET_DECK_QUERY = `
 update "cards" set "drawn" = FALSE
 using "decks"
 where "cards"."deck_id" = "decks"."id"
-  and "decks"."guild_id_sf" = $1::binint
+  and "decks"."guild_id_sf" = $1::bigint
   and "decks"."name" = $2::text
 returning ${selectList(CARD_FIELDS, '"cards"')}
 `.trim();

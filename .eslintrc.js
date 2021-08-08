@@ -10,6 +10,8 @@ module.exports = {
   },
   globals: {
     process: 'readonly',
+    __filename: 'readonly',
+    __dirname: 'readonly',
   },
   rules: {
     'linebreak-style': ['error', 'windows'],
