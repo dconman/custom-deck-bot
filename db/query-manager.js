@@ -85,7 +85,7 @@ where "cards"."id" = (
 
 const RESET_DECK_QUERY = `
 update "cards" set "drawn" = FALSE
-using "decks"
+from "decks"
 where "cards"."deck_id" = "decks"."id"
   and "decks"."guild_id_sf" = $1::bigint
   and "decks"."name" = $2::text
