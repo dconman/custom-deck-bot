@@ -29,7 +29,7 @@ returning ${selectList(DECK_FEILDS, '"decks"')}
 
 const CARD_FIELDS = ['"id"', '"name"', '"deck_id"', '"body"', '"drawn"'];
 function filterByDrawn(pos) {
-  return `and "cards"."drawn" = $${pos}::boolean`;
+  return ` and "cards"."drawn" = $${pos}::boolean`;
 }
 
 const LIST_DECK_CARDS_QUERY = `
